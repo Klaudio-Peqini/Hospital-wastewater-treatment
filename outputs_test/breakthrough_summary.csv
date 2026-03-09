@@ -1,0 +1,5 @@
+species,threshold_fraction_of_peak_influent,breakthrough_time_h
+Phenol,0.05,
+CBZ,0.05,
+DCF,0.05,
+Detergent,0.05,
