@@ -1,0 +1,314 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,booktabs,array}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+%\usepackage{siunitx}
+\usepackage{ragged2e}
+
+\title{Modelim Dinamik i Trajtimit të Ujërave të Ndotura Spitalore}
+\subtitle{Nga një prototip MATLAB në një paketë Python më realiste dhe më e kontrollueshme nga terminali}
+\author{Klaudio Peqini}
+\institute{Material prezantues për diskutim teknik me profesorin}
+\date{\today}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\safeinclude}[2][0.72\textwidth]{%
+  \IfFileExists{#2}{\includegraphics[width=#1]{#2}}{%
+    \fbox{\parbox[c][0.48\textheight][c]{0.84\textwidth}{\centering
+    Figura \texttt{#2} nuk u gjet gjatë kompilimit.\\[0.5em]
+    Vendoseni figurën në të njëjtin direktor ose përditësoni path-in në skedarin \texttt{.tex}.}}}%
+}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Motivimi shkencor dhe inxhinierik}
+\justifying
+Ujërat e ndotura spitalore përmbajnë një përzierje komplekse të:
+\begin{itemize}
+    \item lëndës organike biodegraduese dhe jo-biodegraduese,
+    \item lëndëve ushqyese (azot, fosfor),
+    \item mikrondotësve farmaceutikë,
+    \item dezinfektantëve dhe komponimeve inhibuese,
+    \item grimcave pezull, vajrave dhe komponimeve të adsorbueshme.
+\end{itemize}
+Qëllimi i modelit nuk është vetëm të riprodhojë prirje numerike, por të shërbejë si \alert{mjet interpretues} për:
+\begin{itemize}
+    \item vlerësimin e performancës së trenit të trajtimit,
+    \item analizën e skenarëve të ngarkesës,
+    \item identifikimin e pikave ku sistemi dështon ose humbet efikasitetin.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Objektivi i versionit të ri të paketës}
+\justifying
+Versioni i ri në Python u ndërtua për të adresuar kufizimet e prototipit paraprak dhe për të ofruar:
+\begin{enumerate}
+    \item \textbf{dinamikë më realiste të influentit},
+    \item \textbf{më shumë variabla dinamikë},
+    \item \textbf{trajtim të diferencuar sipas proceseve},
+    \item \textbf{kontroll nga terminali} përmes \code{argparse},
+    \item \textbf{figura dhe tabela} gati për raportim dhe diskutim.
+\end{enumerate}
+Arkitektura e trajtimit të simuluar është:
+\[
+\mathrm{EQ} \rightarrow \mathrm{MBR} \rightarrow \mathrm{AOP} \rightarrow \mathrm{GAC}
+\]
+ku:
+\begin{itemize}
+    \item EQ = rezervuar i barazimit,
+    \item MBR = reaktor biologjik me membranë,
+    \item AOP = proces oksidimi i avancuar,
+    \item GAC = adsorbim në karbon aktiv granular.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ndryshimet kryesore kundrejt modelit fillestar}
+\small
+\begin{tabular}{>{\RaggedRight\arraybackslash}p{0.31\textwidth} >{\RaggedRight\arraybackslash}p{0.29\textwidth} >{\RaggedRight\arraybackslash}p{0.31\textwidth}}
+\toprule
+Aspekti & Prototipi fillestar & Paketa e re në Python \\
+\midrule
+Influenti & Profil sinusoidal idealizuar & Profil ditor spitalor + zhurmë + ngjarje ``shock'' \\
+Blloku EQ & Vetëm konceptual & Dinamik i modeluar në mënyrë eksplicite \\
+COD & Një variabël e vetme & I ndarë në fraksion biodegradues dhe inert \\
+Nutrientët & Trajtim minimal & NH$_4^+$, NO$_3^-$, PO$_4^{3-}$ me transformime të thjeshtuara \\
+Komponimet inhibuese & Pothuajse të munguara & Fenole, formaldehid, glutaraldehid, detergjentë, vajra, Pb \\
+AOP/GAC & Shumë të përmbledhur & Parametra më specifikë sipas llojit të komponimit \\
+Ekzekutimi & Skript statik & CLI nga terminali me argumente \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Variablat e modeluara në paketën e re}
+\justifying
+Gjendja e sistemit u zgjerua për të përfshirë treguesit kryesorë të cilësisë së ujit dhe komponimeve problematike:
+\begin{columns}[T]
+\column{0.48\textwidth}
+\begin{itemize}
+    \item BOD
+    \item COD biodegradues
+    \item COD inert
+    \item TOC
+    \item NH$_4^+$
+    \item NO$_3^-$
+    \item PO$_4^{3-}$
+    \item SS
+\end{itemize}
+\column{0.48\textwidth}
+\begin{itemize}
+    \item alkalinitet
+    \item përçueshmëri
+    \item fenole
+    \item formaldehid
+    \item glutaraldehid
+    \item detergjentë anionikë
+    \item vajra/yndyrna
+    \item Pb, CBZ, DCF
+\end{itemize}
+\end{columns}
+\vspace{0.5em}
+Kjo e zhvendos modelin nga një qasje ``toy model'' drejt një \alert{modeli shumë-komponentësh}, më afër realitetit të ujërave të ndotura spitalore.
+\end{frame}
+
+\begin{frame}{Bërthama matematikore e modelit}
+\justifying
+Për rezervuarin e barazimit dhe reaktorin biologjik përdoret bilanci dinamik i masës:
+\[
+\frac{dC_i}{dt}=\frac{Q}{V}\left(C_{i,\,in}-C_i\right)-r_i(C,\,pH,\,I,\,F)
+\]
+ku:
+\begin{itemize}
+    \item $C_i$ është përqendrimi i komponentit $i$,
+    \item $Q/V$ kontrollon kohën e qëndrimit,
+    \item $r_i$ përfaqëson heqjen/transformimin biologjik,
+    \item $I$ përmbledh efektet inhibuese,
+    \item $F$ përfaqëson indeksin empirik të fouling-ut.
+\end{itemize}
+Për AOP përdoret një zhdukje efektive e rendit të parë:
+\[
+C_{i,out}=C_{i,in}\exp(-k_{AOP,i}\tau)
+\]
+Ndërsa për GAC përdoret një formulim i tipit breakthrough, i varur nga afiniteti adsorptiv dhe koha e shërbimit të shtratit.
+\end{frame}
+
+\begin{frame}{Si u bë influenti më realist}
+\justifying
+Në vend të një sinusoide të vetme, influenti u ndërtua si superpozim i tre elementeve:
+\[
+C_{in}(t)=C_{base}(t)\,[1+\epsilon(t)] + C_{shock}(t)
+\]
+ku:
+\begin{itemize}
+    \item $C_{base}(t)$ = profil ditor i ngarkesës spitalore (natë, mëngjes, pik, pasdite),
+    \item $\epsilon(t)$ = luhatje të rastësishme për të shmangur një sinjal tepër të rregullt,
+    \item $C_{shock}(t)$ = ngjarje impulsive që imitojnë p.sh. shkarkime dezinfektantësh ose ngarkesa laboratorike.
+\end{itemize}
+\vspace{0.5em}
+Kjo zgjedhje jep kurba më të besueshme fizikisht dhe shmang prodhimin e rezultateve periodike artificiale.
+\end{frame}
+
+\begin{frame}{Rezultatet kryesore që duhen diskutuar me profesorin}
+\justifying
+Paketa gjeneron automatikisht figura dhe tabela që ndahen në pesë grupe interpretimi:
+\begin{enumerate}
+    \item \textbf{Prirjet kohore të ndotësve masivë} (BOD, COD, NH$_4^+$, PO$_4^{3-}$, SS).
+    \item \textbf{Prirjet e mikrondotësve} (p.sh. CBZ, DCF) përgjatë AOP dhe GAC.
+    \item \textbf{Mesataret e efluentit për 24 orë} për krahasim me objektiva/toleranca.
+    \item \textbf{Breakthrough i GAC} për të kuptuar humbjen graduale të kapacitetit adsorbues.
+    \item \textbf{pH dhe fouling} si tregues operacionalë të qëndrueshmërisë së sistemit.
+\end{enumerate}
+Qëllimi interpretues nuk është një numër i vetëm, por \alert{sjellja e zinxhirit të trajtimit} nën skenarë të ndryshëm.
+\end{frame}
+
+\begin{frame}{Figura 1: Parametrat kryesorë të cilësisë së ujit}
+\centering
+\safeinclude{results_trends.png}
+\vspace{0.4em}
+
+\small
+\justifying
+Kjo figurë përdoret për të diskutuar se si komponentët bazë zbuten përgjatë trenit të trajtimit dhe si dinamika e influentit filtrohet nga EQ dhe MBR.
+\end{frame}
+
+\begin{frame}{Figura 2: Mikrondotësit dhe roli i AOP/GAC}
+\centering
+\safeinclude{micropollutants_trends.png}
+\vspace{0.4em}
+
+\small
+\justifying
+Kjo figurë ilustron pse blloqet e pas-trajtimit janë të nevojshme: reaktori biologjik nuk është i mjaftueshëm për komponimet persistente, ndërsa AOP dhe GAC japin heqjen shtesë që kërkohet.
+\end{frame}
+
+\begin{frame}{Figura 3: Efluenti mesatar 24-orësh}
+\centering
+\safeinclude{effluent_24h_avg.png}
+\vspace{0.4em}
+
+\small
+\justifying
+Mesatarja 24-orëshe është tregues shumë më i përshtatshëm për diskutim teknik sesa sinjale të çastit, sepse lejon krahasim me objektiva operacionale dhe me kufij të mundshëm të shkarkimit.
+\end{frame}
+
+\begin{frame}{Figura 4: Breakthrough në GAC dhe jetëgjatësia funksionale}
+\centering
+\safeinclude{gac_breakthrough.png}
+\vspace{0.4em}
+
+\small
+\justifying
+Kjo figurë u shërben vendimeve praktike: kur fillon humbja e efikasitetit të adsorbimit dhe sa i ndjeshëm është sistemi ndaj përmasës së shtratit, afinitetit dhe ngarkesës së hyrjes.
+\end{frame}
+
+\begin{frame}{Figura 5: pH dhe fouling si tregues operacionalë}
+\centering
+\safeinclude{pH_and_fouling.png}
+\vspace{0.4em}
+
+\small
+\justifying
+Ky panel ndihmon në diskutimin se jo çdo gjë është ``heqje përqendrimesh''; një model më realist duhet të japë edhe sinjale operacionale për stabilitetin e procesit biologjik dhe për degradimin gradual të performancës së membranës.
+\end{frame}
+
+\begin{frame}{Kontrolli nga terminali: avantazh praktik}
+\justifying
+Paketa e re mund të komandohet nga terminali pa modifikuar kodin burimor.
+\vspace{0.4em}
+
+Shembuj tipikë:
+\begin{itemize}
+    \item simulim nominal:
+    \code{PYTHONPATH=src python -m hospital\_wwtp.cli simulate --scenario nominal}
+    \item skenar me oksidim më të fortë:
+    \code{... --oxidation-scale 1.3}
+    \item skenar me ngjarje ``shock'':
+    \code{... --shock-hour 42 --shock-width-h 1.0 --shock-multiplier 3.5}
+    \item ekzekutim në batch për disa skenarë:
+    \code{PYTHONPATH=src python -m hospital\_wwtp.cli batch}
+\end{itemize}
+\vspace{0.5em}
+Kjo e bën paketën të dobishme jo vetëm si kod kërkimor, por edhe si mjet të shpejtë për analiza krahasuese dhe ndjeshmëri parametrash.
+\end{frame}
+
+\begin{frame}{Përfundime teknike}
+\justifying
+Nga analiza e modelit të ri dalin disa përfundime të rëndësishme:
+\begin{itemize}
+    \item Shtimi i \textbf{EQ dinamik} është thelbësor për zbutjen realiste të ngarkesave hyrëse.
+    \item Ndarja e \textbf{COD në fraksione} përmirëson interpretimin e heqjes biologjike kundrejt komponimeve refraktare.
+    \item \textbf{AOP dhe GAC} nuk janë blloqe luksi; ato janë të domosdoshme për mikrondotësit persistente.
+    \item Komponimet inhibuese dhe fouling-u ndikojnë drejtpërdrejt në robustësinë e sistemit.
+    \item Për diskutim me profesorin, figurat duhet lexuar si \alert{sjellje të sistemit nën skenarë}, jo si ``e vërtetë absolute'' pa kalibrim eksperimental.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Punë e ardhshme e rekomanduar}
+\justifying
+Hapat më të logjikshëm për zhvillim të mëtejshëm janë:
+\begin{enumerate}
+    \item kalibrim me të dhëna laboratorike ose pilot,
+    \item përmirësim i parametrave të AOP sipas komponimit,
+    \item modelim më i kujdesshëm i adsorbimit në GAC,
+    \item analizë ndjeshmërie dhe pasigurie me intervale parametrike,
+    \item krahasim i skenarëve ``normal'', ``high-load'' dhe ``shock''.
+\end{enumerate}
+Kjo do ta transformonte paketën nga një prototip shumë i mirë inxhinierik në një mjet më të fortë për diskutim shkencor dhe dizajn paraprak.
+\end{frame}
+
+\begin{frame}{Pse paketa e mëparshme në MATLAB dha rezultate jorealiste? (I)}
+\justifying
+Arsyeja kryesore nuk ishte ``gabim matematikor'', por \alert{zgjedhja e input-it dhe niveli i thjeshtimit}:
+\begin{itemize}
+    \item influenti ishte i imponuar si \textbf{sinusoidë ideale} me periudhë të fiksuar,
+    \item ekuacionet e reaktorit ishin kryesisht \textbf{lineare të rendit të parë},
+    \item rezervuari EQ nuk ishte modeluar realisht si bllok dinamik,
+    \item mungonin luhatjet stohastike, pikat ditore dhe ngjarjet impulsive.
+\end{itemize}
+Për një sistem linear të detyruar me sinjal sinusoidal,
+\[
+C_{in}(t)=C_0+A\sin(\omega t)
+\]
+është e natyrshme që zgjidhja në dalje të mbetet afërsisht sinusoidale, vetëm me amplitudë më të vogël dhe me vonesë fazore.
+\end{frame}
+
+\begin{frame}{Pse paketa e mëparshme në MATLAB dha rezultate jorealiste? (II)}
+\justifying
+Si pasojë, kurbat finale kishin një pamje shumë të rregullt dhe jo-tipike për ujërat e ndotura spitalore reale.
+\vspace{0.4em}
+
+\textbf{Pikat kryesore të kritikës teknike:}
+\begin{itemize}
+    \item ritëm periodik tepër i lëmuar,
+    \item mungesë e pikave të ngarkesës dhe e episodëve ``shock'',
+    \item mungesë e zbutjes reale nga EQ,
+    \item model biologjik tepër i përmbledhur për të deformuar ose filtruar në mënyrë jolineare sinjalin hyrës.
+\end{itemize}
+\vspace{0.4em}
+
+\textbf{Mesazhi përfundimtar:} rezultati jorealist ishte kryesisht pasojë e një \alert{prototipi paraprak me input shumë idealizuar}, jo e një ideje të gabuar modelimi. Pikërisht për këtë arsye u zhvillua versioni i ri në Python.
+\end{frame}
+
+\begin{frame}
+\centering
+\Huge Faleminderit!
+
+\vspace{1em}
+\Large Diskutim, komente dhe sugjerime
+\end{frame}
+
+\end{document}
