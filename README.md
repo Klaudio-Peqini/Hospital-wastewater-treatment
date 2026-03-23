@@ -125,46 +125,40 @@ $$
 
 The nonlinear PDE is solved analytically by characteristics:
 
-\[
+$$
 \frac{x}{t}=\frac{u}{\phi}\frac{df_w}{dS_w}.
-\]
+$$
 
 Different saturation states move with different characteristic speeds.  
-Because those speeds are nonlinear functions of \(S_w\), a **shock front** forms.
+Because those speeds are nonlinear functions of $S_w$, a **shock front** forms.
 
 ### 3.4 Welge tangent / shock condition
 
-The shock saturation \(S_{wf}\) is identified numerically from the tangency condition
+The shock saturation $S_{wf}$ is identified numerically from the tangency condition
 
-\[
-\left.\frac{df_w}{dS_w}\right|_{S_{wf}}
-=
-\frac{f_w(S_{wf})-f_w(S_{wi})}{S_{wf}-S_{wi}}.
-\]
+$$
+\left.\frac{df_w}{dS_w}\right|_{S_{wf}} = \frac{f_w(S_{wf})-f_w(S_{wi})}{S_{wf}-S_{wi}}.
+$$
 
 This gives the dimensionless shock speed
 
-\[
-v_D^{\text{shock}}
-=
-\frac{f_w(S_{wf})-f_w(S_{wi})}{S_{wf}-S_{wi}},
-\]
+$$
+v_D^{\text{shock}} = \frac{f_w(S_{wf})-f_w(S_{wi})}{S_{wf}-S_{wi}},
+$$
 
 and the breakthrough pore volume injected (PVI)
 
-\[
+$$
 \mathrm{PVI}_{bt}=\frac{1}{v_D^{\text{shock}}}.
-\]
+$$
 
 ### 3.5 Production history
 
 The production-side water cut is obtained from the outlet saturation after breakthrough through the characteristic relation
 
-\[
-\frac{df_w}{dS_w}=\frac{1}{t_D},
-\qquad
-t_D=\frac{ut}{\phi L}.
-\]
+$$
+\frac{df_w}{dS_w}=\frac{1}{t_D}, \qquad t_D=\frac{ut}{\phi L}.
+$$
 
 The recovery factor is computed by numerical quadrature of the oil-cut history.
 
