@@ -94,32 +94,32 @@ Here:
 
 The implementation uses the effective saturation
 
-\[
+$$
 S_e=\frac{S_w-S_{wi}}{1-S_{wi}-S_{or}},
 \qquad 0 \le S_e \le 1
-\]
+$$
 
 and Corey laws
 
-\[
+$$
 k_{rw}=k_{rw0} S_e^{n_w}, \qquad
 k_{ro}=k_{ro0}(1-S_e)^{n_o}.
-\]
+$$
 
 Mobilities are
 
-\[
+$$
 \lambda_w=\frac{k_{rw}}{\mu_w^{(*)}}, \qquad
 \lambda_o=\frac{k_{ro}}{\mu_o},
-\]
+$$
 
-where \(\mu_w^{(*)}\) is either the waterflood viscosity \(\mu_w\) or the polymer-modified viscosity \(\mu_w^p\).
+where $\mu_w^{(*)}$ is either the waterflood viscosity $\mu_w$ or the polymer-modified viscosity $\mu_w^p$.
 
 Then the fractional flow is
 
-\[
+$$
 f_w(S_w)=\frac{\lambda_w}{\lambda_w+\lambda_o}.
-\]
+$$
 
 ### 3.3 Method of characteristics
 
