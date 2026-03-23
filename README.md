@@ -339,7 +339,7 @@ A higher polymer viscosity generally:
 - increases cumulative recovery.
 
 ### 9.2 `saturation_profiles_comparison.png`
-Shows the saturation front in dimensionless space \(x/L\).  
+Shows the saturation front in dimensionless space $x/L$.  
 Compared with waterflooding, polymer flooding generally displays a more favourable displacement profile.
 
 ### 9.3 `production_curves_comparison.png`
